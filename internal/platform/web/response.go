@@ -68,8 +68,6 @@ var (
 	// ErrForbidden occurs when we know who the user is but they attempt a
 	// forbidden action.
 	ErrForbidden = errors.New("Forbidden")
-
-	FieldValidationErrTxt = "field validation failure"
 )
 
 // Error handles all error responses for the API.
@@ -99,10 +97,9 @@ func Error(cxt context.Context, w http.ResponseWriter, err error) {
 	switch e := errors.Cause(err).(type) {
 	case InvalidError:
 		v := JSONError{
-			Error:  FieldValidationErrTxt,
+			Error:  ErrValidation.Error(),
 			Fields: e,
 		}
-
 		Respond(cxt, w, v, http.StatusBadRequest)
 		return
 	}
@@ -134,7 +131,6 @@ func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code 
 
 	// Write the status code to the response and context.
 	w.WriteHeader(code)
-
 	// Marshal the data into a JSON string.
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
