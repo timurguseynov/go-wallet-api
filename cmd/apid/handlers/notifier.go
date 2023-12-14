@@ -31,6 +31,7 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 	wsConn, _ := upgrader.Upgrade(w, r, nil)
 
 	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 
 	var lastCheckUsers []user.User
 
@@ -70,6 +71,7 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 	wsConn, _ := upgrader.Upgrade(w, r, nil)
 
 	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 
 	var lastCheckUsers []user.User
 
