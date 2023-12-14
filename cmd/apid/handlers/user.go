@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/timurguseynov/user-wallet-api/internal/platform/user"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/web"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 
 	"github.com/pkg/errors"
 
-	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 )
 
 // User represents the User API method handler set.

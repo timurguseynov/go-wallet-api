@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/timurguseynov/user-wallet-api/cmd/apid/handlers"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 )
 
 var (

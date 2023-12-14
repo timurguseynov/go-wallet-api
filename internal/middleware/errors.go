@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 
 	"github.com/pkg/errors"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/web"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 var logStdErr *log.Logger

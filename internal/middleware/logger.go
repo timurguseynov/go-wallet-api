@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/timurguseynov/user-wallet-api/internal/platform/web"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 // RequestLogger writes some information about the request to the logs in

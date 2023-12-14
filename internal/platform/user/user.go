@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 )
 
 type User struct {

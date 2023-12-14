@@ -1,4 +1,4 @@
-module github.com/timurguseynov/user-wallet-api
+module github.com/timurguseynov/go-wallet-api
 
 go 1.21.1
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/require"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 )
 
 func RunTestNotifier(t *testing.T) {

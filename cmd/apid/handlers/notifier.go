@@ -9,8 +9,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 )
 
 type Notifier struct {

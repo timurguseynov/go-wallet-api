@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 
-	"github.com/timurguseynov/user-wallet-api/cmd/apid/handlers"
+	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
 )
 
 const (

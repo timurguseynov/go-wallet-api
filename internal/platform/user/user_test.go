@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/tests"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/tests"
 )
 
 var test *tests.Test

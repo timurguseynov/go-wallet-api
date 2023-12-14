@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/pborman/uuid"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
-	"github.com/timurguseynov/user-wallet-api/internal/platform/web"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 // Success and failure markers.
