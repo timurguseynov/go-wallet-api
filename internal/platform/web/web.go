@@ -134,6 +134,7 @@ func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
 		// any error occuring or not.
 		w.Header().Set(TraceIDHeader, v.TraceID)
 
+		// Extract url params like /product/:id to use as a map in handler
 		vars := mux.Vars(r)
 
 		// Call the wrapped handler functions.
