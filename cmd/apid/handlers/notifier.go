@@ -80,7 +80,8 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 		case <-ticker.C:
 			users, err := user.List(ctx, n.MasterDB)
 			if err != nil {
-
+				sendMessage(wsConn, NotifierError{"couldn't find users"})
+				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
 
