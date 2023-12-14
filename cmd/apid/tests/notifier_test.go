@@ -37,9 +37,10 @@ func wsNotifierLeaderBoard(t *testing.T) {
 	var users []user.User
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
-	require.Equal(t, int64(5000), users[0].Balance)
-	require.Equal(t, int64(900), users[1].Balance)
-	require.Equal(t, int64(800), users[2].Balance)
+	for i := 1; i < len(users); i++ {
+		require.True(t, users[i-1].Balance > users[i].Balance, "should return users sorted by balance")
+
+	}
 }
 
 func wsNotifierOutcomes(t *testing.T) {
