@@ -140,12 +140,6 @@ func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
 		handler(ctx, w, r, vars)
 	}
 
-	// Allow wildcard verb to use with websockets
-	if verb == "*" {
-		a.Router.HandleFunc(path, h)
-		return
-	}
-
 	// Add this handler for the specified verb and route.
 	a.Router.HandleFunc(path, h).Methods(verb)
 }

@@ -33,8 +33,8 @@ func API(db *db.DB) http.Handler {
 	n := Notifier{
 		MasterDB: db,
 	}
-	app.Handle("*", "/ws/topic/leaderboard", n.leaderBoard)
-	app.Handle("*", "/ws/topic/outcomes", n.outcomes)
+	app.Handle(http.MethodGet, "/ws/topic/leaderboard", n.leaderBoard)
+	app.Handle(http.MethodGet, "/ws/topic/outcomes", n.outcomes)
 
 	return app
 }
