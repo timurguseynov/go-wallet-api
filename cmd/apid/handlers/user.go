@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 
@@ -20,6 +21,13 @@ type User struct {
 type PostUserAmount struct {
 	ID     string `json:"id"`
 	Amount int64  `json:"amount"`
+}
+
+func (a PostUserAmount) Validate() error {
+	return validation.ValidateStruct(&a,
+		validation.Field(&a.Amount, validation.Required),
+		validation.Field(&a.Amount, validation.Min(10)),
+	)
 }
 
 func (u *User) postUserCreate(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
