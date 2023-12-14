@@ -59,7 +59,8 @@ func validate(v interface{}) error {
 
 		inv = append(inv, Invalid{Fld: key, Err: e})
 	}
-	return nil
+
+	return inv
 }
 
 // Key represents the type of value for the context key.
