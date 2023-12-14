@@ -93,13 +93,7 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 			}
 			lastCheckUsers = users
 
-			message, err := json.Marshal(users)
-			if err != nil {
-				wsConn.Close()
-				return errors.Wrap(err, "")
-			}
-
-			err = wsConn.WriteMessage(websocket.TextMessage, message)
+			err = sendMessage(wsConn, users)
 			if err != nil {
 				wsConn.Close()
 				return errors.Wrap(err, "")
