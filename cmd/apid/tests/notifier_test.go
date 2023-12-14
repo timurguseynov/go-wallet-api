@@ -37,9 +37,24 @@ func wsNotifierLeaderBoard(t *testing.T) {
 	var users []user.User
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
+	require.Len(t, users, createdUsersCount)
 	for i := 1; i < len(users); i++ {
-		require.True(t, users[i-1].Balance > users[i].Balance, "should return users sorted by balance")
+		require.True(t, users[i-1].Balance >= users[i].Balance, "should return users sorted by balance")
+	}
 
+	// change data to allow one more read
+	err = addTestUser(context.TODO(), test.MasterDB, "John1", 100)
+	require.NoError(t, err)
+
+	// test one more read
+	messageType, message, err = ws.ReadMessage()
+	require.NoError(t, err)
+	require.Equal(t, websocket.TextMessage, messageType)
+	err = json.Unmarshal(message, &users)
+	require.NoError(t, err)
+	require.Len(t, users, createdUsersCount)
+	for i := 1; i < len(users); i++ {
+		require.True(t, users[i-1].Balance >= users[i].Balance, "should return users sorted by balance")
 	}
 }
 
@@ -59,5 +74,14 @@ func wsNotifierOutcomes(t *testing.T) {
 	var users []user.User
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
-	require.Equal(t, 11, len(users))
+	require.Len(t, users, createdUsersCount)
+
+	// change data to allow one more read
+	err = addTestUser(context.TODO(), test.MasterDB, "John1", 100)
+	require.NoError(t, err)
+
+	// test one more read
+	messageType, message, err = ws.ReadMessage()
+	require.NoError(t, err)
+	require.Equal(t, websocket.TextMessage, messageType)
 }

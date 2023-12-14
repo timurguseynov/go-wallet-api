@@ -18,8 +18,9 @@ import (
 )
 
 var (
-	a    *web.App
-	test *tests.Test
+	a                 *web.App
+	test              *tests.Test
+	createdUsersCount int
 )
 
 // TestMain is the entry point for testing.
@@ -48,20 +49,27 @@ func testMain(m *testing.M) int {
 
 func addTestUsers(ctx context.Context, dbConn *db.DB) error {
 	for i := 0; i < 10; i++ {
-		u := user.User{
-			Name: "Alex" + strconv.Itoa(i),
-		}
-		id, err := user.Insert(ctx, dbConn, u)
-		if err != nil {
-			return errors.Wrap(err, "")
-		}
-
-		err = user.DepositByID(ctx, dbConn, id, int64(i*100))
-		if err != nil {
-			return errors.Wrap(err, "")
-
-		}
+		addTestUser(ctx, dbConn, "Alex", i*100)
 	}
+
+	return nil
+}
+
+func addTestUser(ctx context.Context, dbConn *db.DB, name string, depositAmount int) error {
+	u := user.User{
+		Name: name + strconv.Itoa(depositAmount),
+	}
+	id, err := user.Insert(ctx, dbConn, u)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	err = user.DepositByID(ctx, dbConn, id, int64(depositAmount))
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	createdUsersCount++
 
 	return nil
 }
