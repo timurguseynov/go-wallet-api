@@ -1,0 +1,89 @@
+package handlers
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/timurguseynov/user-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/user-wallet-api/internal/platform/web"
+
+	"github.com/pkg/errors"
+
+	"github.com/timurguseynov/user-wallet-api/internal/platform/db"
+)
+
+// User represents the User API method handler set.
+type User struct {
+	MasterDB *db.DB
+}
+
+type PostUserAmount struct {
+	ID     string `json:"id"`
+	Amount int64  `json:"amount"`
+}
+
+func (u *User) postUserCreate(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	var userCreate user.User
+	err := web.Unmarshal(r.Body, &userCreate)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	id, err := user.Insert(ctx, u.MasterDB, userCreate)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	resp := user.User{
+		ID: id,
+	}
+
+	web.Respond(ctx, w, resp, http.StatusOK)
+	return nil
+}
+
+func (u *User) postUserDeposit(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	var userAmount PostUserAmount
+	err := web.Unmarshal(r.Body, &userAmount)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	err = user.DepositByID(ctx, u.MasterDB, userAmount.ID, userAmount.Amount)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	web.Respond(ctx, w, true, http.StatusOK)
+	return nil
+}
+
+func (u *User) postUserWithdraw(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	var userAmount PostUserAmount
+	err := web.Unmarshal(r.Body, &userAmount)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	err = user.WithdrawByID(ctx, u.MasterDB, userAmount.ID, userAmount.Amount)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	web.Respond(ctx, w, true, http.StatusOK)
+	return nil
+}
+
+func (u *User) getUserBalance(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	userBalance, err := user.GetBalanceByID(ctx, u.MasterDB, params["userID"])
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	b := user.User{
+		Balance: userBalance,
+	}
+
+	web.Respond(ctx, w, b, http.StatusOK)
+	return nil
+}
