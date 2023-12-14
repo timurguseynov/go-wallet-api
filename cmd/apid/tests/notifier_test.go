@@ -18,7 +18,7 @@ func RunTestNotifier(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("wsNotifierLeaderBoard", wsNotifierLeaderBoard)
-	// t.Run("wsNotifierOutcomes", wsNotifierOutcomes)
+	t.Run("wsNotifierOutcomes", wsNotifierOutcomes)
 }
 
 func wsNotifierLeaderBoard(t *testing.T) {
