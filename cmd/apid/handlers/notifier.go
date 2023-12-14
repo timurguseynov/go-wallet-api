@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"reflect"
 	"sort"
 	"time"
 
@@ -27,6 +28,8 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 
 	ticker := time.NewTicker(1 * time.Second)
 
+	var lastCheckUsers []user.User
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -41,6 +44,12 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 			sort.Slice(users, func(i, j int) bool {
 				return users[i].Balance > users[j].Balance
 			})
+
+			// only send data if it's changed
+			if reflect.DeepEqual(lastCheckUsers, users) {
+				continue
+			}
+			lastCheckUsers = users
 
 			message, err := json.Marshal(users)
 			if err != nil {
@@ -60,6 +69,8 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 
 	ticker := time.NewTicker(1 * time.Second)
 
+	var lastCheckUsers []user.User
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -69,6 +80,12 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 			if err != nil {
 				return errors.Wrap(err, "")
 			}
+
+			// only send data if it's changed
+			if reflect.DeepEqual(lastCheckUsers, users) {
+				continue
+			}
+			lastCheckUsers = users
 
 			message, err := json.Marshal(users)
 			if err != nil {
