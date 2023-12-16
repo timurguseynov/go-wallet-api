@@ -127,7 +127,6 @@ func postUserWithdrawValidateInputAmount(t *testing.T) {
 }
 
 func getUserBalance(t *testing.T) {
-	t.Log(fmt.Sprintf("/api/wallet/balance/%s", userID))
 	r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/wallet/balance/%s", userID), nil)
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
