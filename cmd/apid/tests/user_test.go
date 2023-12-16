@@ -30,10 +30,10 @@ func RunTestUser(t *testing.T) {
 }
 
 func postUserCreate(t *testing.T) {
-	expected := user.User{
+	u := user.User{
 		Name: "Alex",
 	}
-	body, err := json.Marshal(expected)
+	body, err := json.Marshal(u)
 	require.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/user/create", bytes.NewBuffer(body))
@@ -49,11 +49,11 @@ func postUserCreate(t *testing.T) {
 }
 
 func postUserDeposit(t *testing.T) {
-	expected := handlers.PostUserAmount{
+	userAmount := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: depositAmount,
 	}
-	body, err := json.Marshal(expected)
+	body, err := json.Marshal(userAmount)
 	require.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/deposit", bytes.NewBuffer(body))
@@ -67,11 +67,11 @@ func postUserDeposit(t *testing.T) {
 }
 
 func postUserDepositValidateInputAmount(t *testing.T) {
-	expected := handlers.PostUserAmount{
+	userAmount := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: 0,
 	}
-	body, err := json.Marshal(expected)
+	body, err := json.Marshal(userAmount)
 	require.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/deposit", bytes.NewBuffer(body))
@@ -88,11 +88,11 @@ func postUserDepositValidateInputAmount(t *testing.T) {
 }
 
 func postUserWithdraw(t *testing.T) {
-	expected := handlers.PostUserAmount{
+	userAmount := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: withdrawAmount,
 	}
-	body, err := json.Marshal(expected)
+	body, err := json.Marshal(userAmount)
 	require.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
@@ -106,11 +106,11 @@ func postUserWithdraw(t *testing.T) {
 }
 
 func postUserWithdrawValidateInputAmount(t *testing.T) {
-	expected := handlers.PostUserAmount{
+	userAmount := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: 0,
 	}
-	body, err := json.Marshal(expected)
+	body, err := json.Marshal(userAmount)
 	require.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
