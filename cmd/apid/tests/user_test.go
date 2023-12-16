@@ -25,6 +25,7 @@ func RunTestUser(t *testing.T) {
 	t.Run("postUserDeposit", postUserDeposit)
 	t.Run("postUserDepositValidateAmount", postUserDepositValidateInputAmount)
 	t.Run("postUserWithdraw", postUserWithdraw)
+	t.Run("postUserWithdrawInsufficientFunds", postUserWithdrawInsufficientFunds)
 	t.Run("postUserWithdrawValidateAmount", postUserWithdrawValidateInputAmount)
 	t.Run("getUserBalance", getUserBalance)
 }
@@ -103,6 +104,24 @@ func postUserWithdraw(t *testing.T) {
 	err = json.NewDecoder(w.Body).Decode(&got)
 	require.NoError(t, err)
 	require.True(t, got)
+}
+
+func postUserWithdrawInsufficientFunds(t *testing.T) {
+	userAmount := handlers.PostUserAmount{
+		ID:     userID,
+		Amount: withdrawAmount + 1,
+	}
+	body, err := json.Marshal(userAmount)
+	require.NoError(t, err)
+
+	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+	a.ServeHTTP(w, r)
+	require.Equal(t, http.StatusPaymentRequired, w.Code, http.StatusText(w.Code))
+	var got web.JSONError
+	err = json.NewDecoder(w.Body).Decode(&got)
+	require.NoError(t, err)
+	require.Equal(t, user.ErrInsufficientFunds.Error(), got.Error)
 }
 
 func postUserWithdrawValidateInputAmount(t *testing.T) {

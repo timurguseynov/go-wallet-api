@@ -8,6 +8,10 @@ import (
 	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 )
 
+var (
+	ErrInsufficientFunds = errors.New("insufficient funds")
+)
+
 type User struct {
 	ID      string `json:"id,omitempty"`
 	Name    string `json:"name,omitempty"`
@@ -85,6 +89,10 @@ func WithdrawByID(ctx context.Context, dbConn *db.DB, userID string, amount int6
 	user, ok := raw.(User)
 	if !ok {
 		return errors.New("couldn't type assert user")
+	}
+
+	if amount > user.Balance {
+		return ErrInsufficientFunds
 	}
 
 	user.Balance = user.Balance - amount

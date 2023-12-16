@@ -75,6 +75,9 @@ func (u *User) postUserWithdraw(ctx context.Context, w http.ResponseWriter, r *h
 
 	err = user.WithdrawByID(ctx, u.MasterDB, userAmount.ID, userAmount.Amount)
 	if err != nil {
+		if err == user.ErrInsufficientFunds {
+			return web.NewResponseError(err, http.StatusPaymentRequired)
+		}
 		return errors.Wrap(err, "")
 	}
 
