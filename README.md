@@ -1,6 +1,8 @@
-# Simple app with REST API, WebSockets and GRPC(not yet implemented)
+# Wallet API
 
-## Based on awesome William Kennedy's service
+Simple app with REST API, WebSockets and GRPC(not yet implemented)
+
+Based on awesome William Kennedy's service
 
 
 ## Run tests
