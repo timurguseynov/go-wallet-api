@@ -16,6 +16,7 @@ type User struct {
 
 func Insert(ctx context.Context, dbConn *db.DB, u User) (string, error) {
 	txn := dbConn.Txn(true)
+	defer txn.Abort()
 
 	u.ID = uuid.New().String()
 
@@ -30,6 +31,7 @@ func Insert(ctx context.Context, dbConn *db.DB, u User) (string, error) {
 
 func GetByID(ctx context.Context, dbConn *db.DB, userID string) (*User, error) {
 	txn := dbConn.Txn(true)
+	defer txn.Abort()
 
 	raw, err := txn.First("user", "id", userID)
 	if err != nil {
@@ -48,6 +50,7 @@ func GetByID(ctx context.Context, dbConn *db.DB, userID string) (*User, error) {
 
 func DepositByID(ctx context.Context, dbConn *db.DB, userID string, amount int64) error {
 	txn := dbConn.Txn(true)
+	defer txn.Abort()
 
 	raw, err := txn.First("user", "id", userID)
 	if err != nil {
@@ -71,8 +74,8 @@ func DepositByID(ctx context.Context, dbConn *db.DB, userID string, amount int64
 }
 
 func WithdrawByID(ctx context.Context, dbConn *db.DB, userID string, amount int64) error {
-
 	txn := dbConn.Txn(true)
+	defer txn.Abort()
 
 	raw, err := txn.First("user", "id", userID)
 	if err != nil {
