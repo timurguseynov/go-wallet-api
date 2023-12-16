@@ -42,7 +42,6 @@ func ErrorHandler(next web.Handler) web.Handler {
 
 		// TODO: check that no patient sensitive information is leaked
 		if err := next(ctx, w, r, params); err != nil {
-
 			if errors.Cause(err) != web.ErrNotFound {
 
 				// Log the error.
@@ -50,7 +49,7 @@ func ErrorHandler(next web.Handler) web.Handler {
 			}
 
 			// Respond with the error.
-			web.Error(ctx, w, errors.Cause(err))
+			web.ErrorHandler(ctx, w, errors.Cause(err))
 
 			// The error has been handled so we can stop propigating it.
 			return nil

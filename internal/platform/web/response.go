@@ -43,6 +43,25 @@ func (err InvalidError) Error() string {
 	return str
 }
 
+// ResponseError is used to pass an error during the request through the
+// application with web specific context.
+type ResponseError struct {
+	Err    error
+	Status int
+}
+
+// NewResponseError wraps a provided error with an HTTP status code. This
+// function should be used when handlers encounter expected errors.
+func NewResponseError(err error, status int) error {
+	return ResponseError{err, status}
+}
+
+// Error implements the error interface. It uses the default message of the
+// wrapped error. This is what will be shown in the services' logs.
+func (re ResponseError) Error() string {
+	return re.Err.Error()
+}
+
 // JSONError is the response for errors that occur within the API.
 type JSONError struct {
 	Error  string       `json:"error"`
@@ -70,8 +89,8 @@ var (
 	ErrForbidden = errors.New("Forbidden")
 )
 
-// Error handles all error responses for the API.
-func Error(cxt context.Context, w http.ResponseWriter, err error) {
+// ErrorHandler handles all error responses for the API.
+func ErrorHandler(cxt context.Context, w http.ResponseWriter, err error) {
 	switch errors.Cause(err) {
 	case ErrNotFound:
 		RespondError(cxt, w, err, http.StatusNotFound)
@@ -101,6 +120,9 @@ func Error(cxt context.Context, w http.ResponseWriter, err error) {
 			Fields: e,
 		}
 		Respond(cxt, w, v, http.StatusBadRequest)
+		return
+	case ResponseError:
+		RespondError(cxt, w, e.Err, e.Status)
 		return
 	}
 
