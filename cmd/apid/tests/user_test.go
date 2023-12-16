@@ -23,9 +23,9 @@ var (
 func RunTestUser(t *testing.T) {
 	t.Run("postUserCreate", postUserCreate)
 	t.Run("postUserDeposit", postUserDeposit)
-	t.Run("postUserDepositValidateAmount", postUserDepositValidateAmount)
+	t.Run("postUserDepositValidateAmount", postUserDepositValidateInputAmount)
 	t.Run("postUserWithdraw", postUserWithdraw)
-	t.Run("postUserWithdrawValidateAmount", postUserWithdrawValidateAmount)
+	t.Run("postUserWithdrawValidateAmount", postUserWithdrawValidateInputAmount)
 	t.Run("getUserBalance", getUserBalance)
 }
 
@@ -66,7 +66,7 @@ func postUserDeposit(t *testing.T) {
 	require.True(t, got)
 }
 
-func postUserDepositValidateAmount(t *testing.T) {
+func postUserDepositValidateInputAmount(t *testing.T) {
 	expected := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: 0,
@@ -105,7 +105,7 @@ func postUserWithdraw(t *testing.T) {
 	require.True(t, got)
 }
 
-func postUserWithdrawValidateAmount(t *testing.T) {
+func postUserWithdrawValidateInputAmount(t *testing.T) {
 	expected := handlers.PostUserAmount{
 		ID:     userID,
 		Amount: 0,
