@@ -10,3 +10,9 @@ Based on awesome William Kennedy's service
 ```bash
 go test ./...
 ```
+
+## Run single test
+
+```bash
+ go test  ./... -run "TestUser/userInsert"
+```
