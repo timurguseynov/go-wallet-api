@@ -31,7 +31,7 @@ var (
 	withdrawAmount int64 = 5000
 )
 
-func TestFlow(t *testing.T) {
+func TestUser(t *testing.T) {
 	defer tests.Recover(t)
 	ctx = tests.Context()
 
