@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
@@ -35,16 +35,16 @@ func postUserCreate(t *testing.T) {
 		Name: "Alex",
 	}
 	body, err := json.Marshal(u)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/user/create", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
 	var got user.User
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.NotEqual(t, "", got)
+	assert.NoError(t, err)
+	assert.NotEqual(t, "", got)
 	userID = got.ID
 }
 
@@ -54,16 +54,16 @@ func postUserDeposit(t *testing.T) {
 		Amount: depositAmount,
 	}
 	body, err := json.Marshal(userAmount)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/deposit", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
 	var got bool
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.True(t, got)
+	assert.NoError(t, err)
+	assert.True(t, got)
 }
 
 func postUserDepositValidateInputAmount(t *testing.T) {
@@ -72,19 +72,19 @@ func postUserDepositValidateInputAmount(t *testing.T) {
 		Amount: 0,
 	}
 	body, err := json.Marshal(userAmount)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/deposit", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
 
 	var got web.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.Equal(t, web.ErrValidation.Error(), got.Error)
-	require.Equal(t, "amount", got.Fields[0].Fld)
-	require.Equal(t, "cannot be blank", got.Fields[0].Err)
+	assert.NoError(t, err)
+	assert.Equal(t, web.ErrValidation.Error(), got.Error)
+	assert.Equal(t, "amount", got.Fields[0].Fld)
+	assert.Equal(t, "cannot be blank", got.Fields[0].Err)
 }
 
 func postUserWithdraw(t *testing.T) {
@@ -93,16 +93,16 @@ func postUserWithdraw(t *testing.T) {
 		Amount: withdrawAmount,
 	}
 	body, err := json.Marshal(userAmount)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
 	var got bool
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.True(t, got)
+	assert.NoError(t, err)
+	assert.True(t, got)
 }
 
 func postUserWithdrawInsufficientFunds(t *testing.T) {
@@ -111,16 +111,16 @@ func postUserWithdrawInsufficientFunds(t *testing.T) {
 		Amount: withdrawAmount + 1,
 	}
 	body, err := json.Marshal(userAmount)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusPaymentRequired, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusPaymentRequired, w.Code, http.StatusText(w.Code))
 	var got web.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.Equal(t, user.ErrInsufficientFunds.Error(), got.Error)
+	assert.NoError(t, err)
+	assert.Equal(t, user.ErrInsufficientFunds.Error(), got.Error)
 }
 
 func postUserWithdrawValidateInputAmount(t *testing.T) {
@@ -129,29 +129,29 @@ func postUserWithdrawValidateInputAmount(t *testing.T) {
 		Amount: 0,
 	}
 	body, err := json.Marshal(userAmount)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	r := httptest.NewRequest(http.MethodPost, "/api/wallet/withdraw", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
 
 	var got web.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.Equal(t, web.ErrValidation.Error(), got.Error)
-	require.Equal(t, "amount", got.Fields[0].Fld)
-	require.Equal(t, "cannot be blank", got.Fields[0].Err)
+	assert.NoError(t, err)
+	assert.Equal(t, web.ErrValidation.Error(), got.Error)
+	assert.Equal(t, "amount", got.Fields[0].Fld)
+	assert.Equal(t, "cannot be blank", got.Fields[0].Err)
 }
 
 func getUserBalance(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/wallet/balance/%s", userID), nil)
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
-	require.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
+	assert.Equal(t, http.StatusOK, w.Code, http.StatusText(w.Code))
 
 	var got user.User
 	err := json.NewDecoder(w.Body).Decode(&got)
-	require.NoError(t, err)
-	require.Equal(t, depositAmount-withdrawAmount, got.Balance)
+	assert.NoError(t, err)
+	assert.Equal(t, depositAmount-withdrawAmount, got.Balance)
 }
