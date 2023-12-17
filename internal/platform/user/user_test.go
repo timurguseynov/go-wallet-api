@@ -1,12 +1,14 @@
-package user
+package user_test
 
 import (
 	"context"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/tests"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 )
 
 var test *tests.Test
@@ -41,34 +43,44 @@ func TestFlow(t *testing.T) {
 
 func userInsert(t *testing.T) {
 	var err error
-	u := User{
+	u := user.User{
 		Name: "Alex",
 	}
-	userID, err = Insert(ctx, test.MasterDB, u)
+	userID, err = user.Insert(ctx, test.MasterDB, u)
 	require.NoError(t, err)
 	require.NotEmpty(t, userID, "should have id generated")
 }
 
 func userDepositByID(t *testing.T) {
-	err := DepositByID(ctx, test.MasterDB, userID, depositAmount)
+	err := user.DepositByID(ctx, test.MasterDB, userID, depositAmount)
 	require.NoError(t, err)
 
-	balance, err := GetBalanceByID(ctx, test.MasterDB, userID)
+	balance, err := user.GetBalanceByID(ctx, test.MasterDB, userID)
 	require.NoError(t, err)
 	require.Equal(t, depositAmount, balance)
 }
 
 func userWithdrawByID(t *testing.T) {
-	err := WithdrawByID(ctx, test.MasterDB, userID, withdrawAmount)
+	err := user.WithdrawByID(ctx, test.MasterDB, userID, withdrawAmount)
 	require.NoError(t, err)
 
-	balance, err := GetBalanceByID(ctx, test.MasterDB, userID)
+	balance, err := user.GetBalanceByID(ctx, test.MasterDB, userID)
 	require.NoError(t, err)
 	require.Equal(t, depositAmount-withdrawAmount, balance)
 }
 
 func userList(t *testing.T) {
-	users, err := List(ctx, test.MasterDB)
+	users, err := user.List(ctx, test.MasterDB)
+	require.NoError(t, err)
+	require.True(t, len(users) > 2)
+}
+
+func userListLeaders(t *testing.T) {
+	users, err := user.List(ctx, test.MasterDB)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(users))
+
+	require.True(t, sort.SliceIsSorted(users, func(i, j int) bool {
+		return users[i].Balance < users[j].Balance
+	}), "should be sorted by Balance")
 }

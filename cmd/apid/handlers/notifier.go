@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"reflect"
-	"sort"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -40,17 +39,12 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
-			users, err := user.List(ctx, n.MasterDB)
+			users, err := user.ListLeaders(ctx, n.MasterDB)
 			if err != nil {
 				sendMessage(wsConn, NotifierError{"couldn't find users"})
 				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
-
-			// put leaders first
-			sort.Slice(users, func(i, j int) bool {
-				return users[i].Balance > users[j].Balance
-			})
 
 			// only send data if it's changed
 			if reflect.DeepEqual(lastCheckUsers, users) {

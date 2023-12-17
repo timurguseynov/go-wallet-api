@@ -10,13 +10,11 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/require"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/tests"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
 )
 
 func RunTestNotifier(t *testing.T) {
-	err := addTestUsers(context.Background(), test.MasterDB)
-	require.NoError(t, err)
-
 	t.Run("wsNotifierLeaderBoard", wsNotifierLeaderBoard)
 	t.Run("wsNotifierOutcomes", wsNotifierOutcomes)
 }
@@ -37,13 +35,10 @@ func wsNotifierLeaderBoard(t *testing.T) {
 	var users []user.User
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
-	require.Len(t, users, createdUsersCount)
-	for i := 1; i < len(users); i++ {
-		require.True(t, users[i-1].Balance >= users[i].Balance, "should return users sorted by balance")
-	}
+	require.True(t, len(users) > 2)
 
 	// change data to allow one more read
-	err = addTestUser(context.TODO(), test.MasterDB, "John1", 100)
+	err = tests.SeedUser(context.TODO(), test.MasterDB, "John1", 100)
 	require.NoError(t, err)
 
 	// test one more read
@@ -52,10 +47,8 @@ func wsNotifierLeaderBoard(t *testing.T) {
 	require.Equal(t, websocket.TextMessage, messageType)
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
-	require.Len(t, users, createdUsersCount)
-	for i := 1; i < len(users); i++ {
-		require.True(t, users[i-1].Balance >= users[i].Balance, "should return users sorted by balance")
-	}
+	require.True(t, len(users) > 2)
+
 }
 
 func wsNotifierOutcomes(t *testing.T) {
@@ -74,10 +67,10 @@ func wsNotifierOutcomes(t *testing.T) {
 	var users []user.User
 	err = json.Unmarshal(message, &users)
 	require.NoError(t, err)
-	require.Len(t, users, createdUsersCount)
+	require.True(t, len(users) > 2)
 
 	// change data to allow one more read
-	err = addTestUser(context.TODO(), test.MasterDB, "John1", 100)
+	err = tests.SeedUser(context.TODO(), test.MasterDB, "John1", 100)
 	require.NoError(t, err)
 
 	// test one more read

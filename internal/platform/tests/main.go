@@ -42,6 +42,8 @@ func New() *Test {
 		log.Fatal("main : couldn't connect to database", err)
 	}
 
+	mustSeed(context.TODO(), dbConn)
+
 	return &Test{Log: log, MasterDB: dbConn}
 }
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"sort"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -141,6 +142,19 @@ func List(ctx context.Context, dbConn *db.DB) ([]User, error) {
 		}
 		users = append(users, u)
 	}
+
+	return users, nil
+}
+
+func ListLeaders(ctx context.Context, dbConn *db.DB) ([]User, error) {
+	users, err := List(ctx, dbConn)
+	if err != nil {
+		return nil, errors.Wrap(err, "")
+	}
+	// put leaders first
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Balance > users[j].Balance
+	})
 
 	return users, nil
 }

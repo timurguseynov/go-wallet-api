@@ -45,7 +45,6 @@ func postUserCreate(t *testing.T) {
 	err = json.NewDecoder(w.Body).Decode(&got)
 	require.NoError(t, err)
 	require.NotEqual(t, "", got)
-	createdUsersCount++
 	userID = got.ID
 }
 
