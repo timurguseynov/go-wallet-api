@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
 
@@ -88,6 +89,10 @@ func RequestLoggerMiddleware(next Handler) Handler {
 	}
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 func websocketMiddleware(next Handler) Handler {
 	// Wrap this handler around the next one provided.
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {

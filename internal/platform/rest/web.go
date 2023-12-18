@@ -13,7 +13,6 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 
 	"github.com/pborman/uuid"
 )
@@ -165,10 +164,6 @@ func wrapMiddleware(handler Handler, mw []Middleware) Handler {
 	return handler
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
 
 func (a *App) WebsocketHandle(path string, handler Handler, mw ...Middleware) {
 	a.usePrepend(websocketMiddleware)
