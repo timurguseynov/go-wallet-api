@@ -93,14 +93,10 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
+
 func websocketMiddleware(next Handler) Handler {
 	// Wrap this handler around the next one provided.
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
-		// prevent double upgrade
-		if isWebsocket(ctx) {
-			return next(ctx, w, r, params)
-		}
-
 		wsConn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			return errors.Wrap(err, "")

@@ -112,10 +112,6 @@ func (a *App) Use(mw ...Middleware) {
 	a.mw = append(a.mw, mw...)
 }
 
-func (a *App) usePrepend(mw ...Middleware) {
-	a.mw = append(mw, a.mw...)
-}
-
 // Handle is our mechanism for mounting Handlers for a given HTTP verb and path
 // pair, this makes for really easy, convenient routing.
 func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
@@ -164,8 +160,6 @@ func wrapMiddleware(handler Handler, mw []Middleware) Handler {
 	return handler
 }
 
-
 func (a *App) WebsocketHandle(path string, handler Handler, mw ...Middleware) {
-	a.usePrepend(websocketMiddleware)
-	a.Handle(http.MethodGet, path, handler, mw...)
+	a.Handle(http.MethodGet, path, websocketMiddleware(handler), mw...)
 }
