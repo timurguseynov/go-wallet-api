@@ -13,6 +13,7 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 
 	"github.com/pborman/uuid"
 )
@@ -66,8 +67,11 @@ func validate(v interface{}) error {
 // Key represents the type of value for the context key.
 type ctxKey int
 
-// KeyValues is how request values or stored/retrieved.
-const KeyValues ctxKey = 1
+const (
+	// KeyValues is how request values or stored/retrieved.
+	KeyValues ctxKey = iota
+	WebsocketConnection
+)
 
 // Values represent state for each request.
 type Values struct {
@@ -109,6 +113,10 @@ func (a *App) Use(mw ...Middleware) {
 	a.mw = append(a.mw, mw...)
 }
 
+func (a *App) usePrepend(mw ...Middleware) {
+	a.mw = append(mw, a.mw...)
+}
+
 // Handle is our mechanism for mounting Handlers for a given HTTP verb and path
 // pair, this makes for really easy, convenient routing.
 func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
@@ -145,13 +153,8 @@ func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
 	a.Router.HandleFunc(path, h).Methods(verb)
 }
 
-func (a *App) AddHandleFunc(path string, f func(http.ResponseWriter, *http.Request)) {
-	a.Router.HandleFunc(path, f)
-}
-
 // wrapMiddleware wraps a handler with some middleware.
 func wrapMiddleware(handler Handler, mw []Middleware) Handler {
-
 	// Wrap with our group specific middleware.
 	for i := len(mw) - 1; i >= 0; i-- {
 		if mw[i] != nil {
@@ -160,4 +163,14 @@ func wrapMiddleware(handler Handler, mw []Middleware) Handler {
 	}
 
 	return handler
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func (a *App) WebsocketHandle(path string, handler Handler, mw ...Middleware) {
+	a.usePrepend(websocketMiddleware)
+	a.Handle(http.MethodGet, path, handler, mw...)
 }

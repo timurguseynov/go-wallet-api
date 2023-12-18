@@ -16,12 +16,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
+
+var ErrNoWebsocketConnection = errors.New("no websocket connection found")
 
 // Invalid describes a validation error belonging to a specific field.
 type Invalid struct {
@@ -62,6 +64,21 @@ func (re ResponseError) Error() string {
 	return re.Err.Error()
 }
 
+type WebsocketError struct {
+	Err    error
+	Status int
+}
+
+func NewWebsocketError(err error, status int) error {
+	return WebsocketError{err, status}
+}
+
+// Error implements the error interface. It uses the default message of the
+// wrapped error. This is what will be shown in the services' logs.
+func (re WebsocketError) Error() string {
+	return re.Err.Error()
+}
+
 // JSONError is the response for errors that occur within the API.
 type JSONError struct {
 	Error  string       `json:"error"`
@@ -90,26 +107,26 @@ var (
 )
 
 // ErrorHandler handles all error responses for the API.
-func ErrorHandler(cxt context.Context, w http.ResponseWriter, err error) {
+func ErrorHandler(ctx context.Context, w http.ResponseWriter, err error) {
 	switch errors.Cause(err) {
 	case ErrNotFound:
-		RespondError(cxt, w, err, http.StatusNotFound)
+		RespondError(ctx, w, err, http.StatusNotFound)
 		return
 
 	case ErrInvalidID:
-		RespondError(cxt, w, err, http.StatusBadRequest)
+		RespondError(ctx, w, err, http.StatusBadRequest)
 		return
 
 	case ErrValidation:
-		RespondError(cxt, w, err, http.StatusBadRequest)
+		RespondError(ctx, w, err, http.StatusBadRequest)
 		return
 
 	case ErrUnauthorized:
-		RespondError(cxt, w, err, http.StatusUnauthorized)
+		RespondError(ctx, w, err, http.StatusUnauthorized)
 		return
 
 	case ErrForbidden:
-		RespondError(cxt, w, err, http.StatusForbidden)
+		RespondError(ctx, w, err, http.StatusForbidden)
 		return
 	}
 
@@ -119,14 +136,57 @@ func ErrorHandler(cxt context.Context, w http.ResponseWriter, err error) {
 			Error:  ErrValidation.Error(),
 			Fields: e,
 		}
-		Respond(cxt, w, v, http.StatusBadRequest)
+		Respond(ctx, w, v, http.StatusBadRequest)
 		return
 	case ResponseError:
-		RespondError(cxt, w, e.Err, e.Status)
+		RespondError(ctx, w, e.Err, e.Status)
 		return
 	}
 
-	RespondError(cxt, w, err, http.StatusInternalServerError)
+	RespondError(ctx, w, err, http.StatusInternalServerError)
+}
+
+func WebsocketErrorHandler(ctx context.Context, err error) {
+	// TODO: replace status codes
+
+	serverErrorStatusCode := 1011
+
+	switch errors.Cause(err) {
+	case ErrNotFound:
+		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		return
+
+	case ErrInvalidID:
+		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		return
+
+	case ErrValidation:
+		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		return
+
+	case ErrUnauthorized:
+		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		return
+
+	case ErrForbidden:
+		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		return
+	}
+
+	switch e := errors.Cause(err).(type) {
+	case InvalidError:
+		v := JSONError{
+			Error:  ErrValidation.Error(),
+			Fields: e,
+		}
+		WebsocketRespond(ctx, v)
+		return
+	case ResponseError:
+		WebsocketRespondError(ctx, e.Err, serverErrorStatusCode)
+		return
+	}
+
+	WebsocketRespondError(ctx, err, serverErrorStatusCode)
 }
 
 // RespondError sends JSON describing the error
@@ -137,7 +197,6 @@ func RespondError(ctx context.Context, w http.ResponseWriter, err error, code in
 // Respond sends JSON to the client.
 // If code is StatusNoContent, v is expected to be nil.
 func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code int) {
-
 	// Set the status code for the request logger middleware.
 	v := ctx.Value(KeyValues).(*Values)
 	v.StatusCode = code
@@ -156,10 +215,59 @@ func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code 
 	// Marshal the data into a JSON string.
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		log.Printf("%s : Respond %v Marshalling JSON response\n", v.TraceID, err)
+		logStdErr.Printf("%s : Respond %v Marshalling JSON response\n", v.TraceID, err)
 		jsonData = []byte("{}")
 	}
 
 	// Send the result back to the client.
 	io.WriteString(w, string(jsonData))
+}
+
+func isWebsocket(ctx context.Context) bool {
+	_, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
+	return ok
+}
+
+func WebsocketRespond(ctx context.Context, data interface{}) error {
+	wsConn, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
+	if !ok {
+		return ErrNoWebsocketConnection
+	}
+
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	err = wsConn.WriteMessage(websocket.TextMessage, jsonData)
+	if err != nil {
+		return errors.Wrap(err, "")
+	}
+
+	return nil
+}
+
+func WebsocketRespondError(ctx context.Context, data interface{}, code int) {
+	wsConn, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
+	if !ok {
+		logStdErr.Println(ErrNoWebsocketConnection)
+		return
+	}
+
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		logStdErr.Println(err)
+		return
+	}
+
+	message := websocket.FormatCloseMessage(code, string(jsonData))
+
+	err = wsConn.WriteMessage(websocket.CloseMessage, message)
+	if err != nil {
+		logStdErr.Println(err)
+		return
+	}
+
+	wsConn.Close()
+
 }

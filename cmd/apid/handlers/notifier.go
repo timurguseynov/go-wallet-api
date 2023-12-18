@@ -2,32 +2,21 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"reflect"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 type Notifier struct {
 	MasterDB *db.DB
 }
 
-type NotifierError struct {
-	Error string `json:"error"`
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
-	wsConn, _ := upgrader.Upgrade(w, r, nil)
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -41,8 +30,6 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 		case <-ticker.C:
 			users, err := user.ListLeaders(ctx, n.MasterDB)
 			if err != nil {
-				sendMessage(wsConn, NotifierError{"couldn't find users"})
-				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
 
@@ -52,9 +39,8 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 			}
 			lastCheckUsers = users
 
-			err = sendMessage(wsConn, users)
+			err = web.WebsocketRespond(ctx, users)
 			if err != nil {
-				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
 		}
@@ -62,7 +48,6 @@ func (n *Notifier) leaderBoard(ctx context.Context, w http.ResponseWriter, r *ht
 }
 
 func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
-	wsConn, _ := upgrader.Upgrade(w, r, nil)
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -76,8 +61,6 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 		case <-ticker.C:
 			users, err := user.List(ctx, n.MasterDB)
 			if err != nil {
-				sendMessage(wsConn, NotifierError{"couldn't find users"})
-				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
 
@@ -87,25 +70,10 @@ func (n *Notifier) outcomes(ctx context.Context, w http.ResponseWriter, r *http.
 			}
 			lastCheckUsers = users
 
-			err = sendMessage(wsConn, users)
+			err = web.WebsocketRespond(ctx, users)
 			if err != nil {
-				wsConn.Close()
 				return errors.Wrap(err, "")
 			}
 		}
 	}
-}
-
-func sendMessage(wsConn *websocket.Conn, messageStruct interface{}) error {
-	message, err := json.Marshal(messageStruct)
-	if err != nil {
-		return errors.Wrap(err, "")
-	}
-
-	err = wsConn.WriteMessage(websocket.TextMessage, message)
-	if err != nil {
-		return errors.Wrap(err, "")
-	}
-
-	return nil
 }

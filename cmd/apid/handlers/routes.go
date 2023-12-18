@@ -8,14 +8,13 @@ import (
 
 	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
 
-	"github.com/timurguseynov/go-wallet-api/internal/middleware"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 // API returns a handler for a set of routes.
 func API(db *db.DB) http.Handler {
 	// Create the web handler for setting routes and middleware.
-	app := web.New(middleware.RequestLogger, middleware.ErrorHandler)
+	app := web.New(web.RequestLoggerMiddleware, web.ErrorHandlerMiddleware)
 
 	// Initialize the routes for the API binding the route to the
 	// handler code for each specified verb.
@@ -33,8 +32,8 @@ func API(db *db.DB) http.Handler {
 	n := Notifier{
 		MasterDB: db,
 	}
-	app.Handle(http.MethodGet, "/ws/topic/leaderboard", n.leaderBoard)
-	app.Handle(http.MethodGet, "/ws/topic/outcomes", n.outcomes)
+	app.WebsocketHandle("/ws/topic/leaderboard", n.leaderBoard)
+	app.WebsocketHandle("/ws/topic/outcomes", n.outcomes)
 
 	return app
 }
