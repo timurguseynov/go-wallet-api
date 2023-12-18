@@ -10,7 +10,7 @@ import (
 
 	"github.com/pborman/uuid"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
 )
 
 // Success and failure markers.
@@ -60,10 +60,10 @@ func Recover(t *testing.T) {
 
 // Context returns an app level context for testing.
 func Context() context.Context {
-	values := web.Values{
+	values := rest.Values{
 		TraceID: uuid.New(),
 		Now:     time.Now(),
 	}
 
-	return context.WithValue(context.Background(), web.KeyValues, &values)
+	return context.WithValue(context.Background(), rest.KeyValues, &values)
 }

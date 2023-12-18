@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 
 	"github.com/pkg/errors"
 
@@ -32,7 +32,7 @@ func (a PostUserAmount) Validate() error {
 
 func (u *User) postUserCreate(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	var userCreate user.User
-	err := web.Unmarshal(r.Body, &userCreate)
+	err := rest.Unmarshal(r.Body, &userCreate)
 	if err != nil {
 		return errors.Wrap(err, "")
 	}
@@ -46,13 +46,13 @@ func (u *User) postUserCreate(ctx context.Context, w http.ResponseWriter, r *htt
 		ID: id,
 	}
 
-	web.Respond(ctx, w, resp, http.StatusOK)
+	rest.Respond(ctx, w, resp, http.StatusOK)
 	return nil
 }
 
 func (u *User) postUserDeposit(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	var userAmount PostUserAmount
-	err := web.Unmarshal(r.Body, &userAmount)
+	err := rest.Unmarshal(r.Body, &userAmount)
 	if err != nil {
 		return errors.Wrap(err, "")
 	}
@@ -62,13 +62,13 @@ func (u *User) postUserDeposit(ctx context.Context, w http.ResponseWriter, r *ht
 		return errors.Wrap(err, "")
 	}
 
-	web.Respond(ctx, w, true, http.StatusOK)
+	rest.Respond(ctx, w, true, http.StatusOK)
 	return nil
 }
 
 func (u *User) postUserWithdraw(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	var userAmount PostUserAmount
-	err := web.Unmarshal(r.Body, &userAmount)
+	err := rest.Unmarshal(r.Body, &userAmount)
 	if err != nil {
 		return errors.Wrap(err, "")
 	}
@@ -76,12 +76,12 @@ func (u *User) postUserWithdraw(ctx context.Context, w http.ResponseWriter, r *h
 	err = user.WithdrawByID(ctx, u.MasterDB, userAmount.ID, userAmount.Amount)
 	if err != nil {
 		if err == user.ErrInsufficientFunds {
-			return web.NewResponseError(err, http.StatusPaymentRequired)
+			return rest.NewResponseError(err, http.StatusPaymentRequired)
 		}
 		return errors.Wrap(err, "")
 	}
 
-	web.Respond(ctx, w, true, http.StatusOK)
+	rest.Respond(ctx, w, true, http.StatusOK)
 	return nil
 }
 
@@ -95,6 +95,6 @@ func (u *User) getUserBalance(ctx context.Context, w http.ResponseWriter, r *htt
 		Balance: userBalance,
 	}
 
-	web.Respond(ctx, w, b, http.StatusOK)
+	rest.Respond(ctx, w, b, http.StatusOK)
 	return nil
 }

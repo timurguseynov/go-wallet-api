@@ -2,7 +2,7 @@
 // http://www.apache.org/licenses/LICENSE-2.0
 
 // Package web provides a thin layer of support for writing web services.
-package web
+package rest
 
 import (
 	"context"

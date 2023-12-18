@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
+	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
 	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/web"
 )
 
 var (
@@ -79,10 +79,10 @@ func postUserDepositValidateInputAmount(t *testing.T) {
 	a.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
 
-	var got web.JSONError
+	var got rest.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
 	assert.NoError(t, err)
-	assert.Equal(t, web.ErrValidation.Error(), got.Error)
+	assert.Equal(t, rest.ErrValidation.Error(), got.Error)
 	assert.Equal(t, "amount", got.Fields[0].Fld)
 	assert.Equal(t, "cannot be blank", got.Fields[0].Err)
 }
@@ -117,7 +117,7 @@ func postUserWithdrawInsufficientFunds(t *testing.T) {
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusPaymentRequired, w.Code, http.StatusText(w.Code))
-	var got web.JSONError
+	var got rest.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
 	assert.NoError(t, err)
 	assert.Equal(t, user.ErrInsufficientFunds.Error(), got.Error)
@@ -136,10 +136,10 @@ func postUserWithdrawValidateInputAmount(t *testing.T) {
 	a.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusBadRequest, w.Code, http.StatusText(w.Code))
 
-	var got web.JSONError
+	var got rest.JSONError
 	err = json.NewDecoder(w.Body).Decode(&got)
 	assert.NoError(t, err)
-	assert.Equal(t, web.ErrValidation.Error(), got.Error)
+	assert.Equal(t, rest.ErrValidation.Error(), got.Error)
 	assert.Equal(t, "amount", got.Fields[0].Fld)
 	assert.Equal(t, "cannot be blank", got.Fields[0].Err)
 }
