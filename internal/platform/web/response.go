@@ -64,21 +64,6 @@ func (re ResponseError) Error() string {
 	return re.Err.Error()
 }
 
-type WebsocketError struct {
-	Err    error
-	Status int
-}
-
-func NewWebsocketError(err error, status int) error {
-	return WebsocketError{err, status}
-}
-
-// Error implements the error interface. It uses the default message of the
-// wrapped error. This is what will be shown in the services' logs.
-func (re WebsocketError) Error() string {
-	return re.Err.Error()
-}
-
 // JSONError is the response for errors that occur within the API.
 type JSONError struct {
 	Error  string       `json:"error"`
@@ -146,6 +131,40 @@ func ErrorHandler(ctx context.Context, w http.ResponseWriter, err error) {
 	RespondError(ctx, w, err, http.StatusInternalServerError)
 }
 
+// RespondError sends JSON describing the error
+func RespondError(ctx context.Context, w http.ResponseWriter, err error, code int) {
+	Respond(ctx, w, JSONError{Error: err.Error()}, code)
+}
+
+// Respond sends JSON to the client.
+// If code is StatusNoContent, v is expected to be nil.
+func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code int) {
+	// Set the status code for the request logger middleware.
+	v := ctx.Value(KeyValues).(*Values)
+	v.StatusCode = code
+
+	// Just set the status code and we are done.
+	if code == http.StatusNoContent {
+		w.WriteHeader(code)
+		return
+	}
+
+	// Set the content type.
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the status code to the response and context.
+	w.WriteHeader(code)
+	// Marshal the data into a JSON string.
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		logStdErr.Printf("%s : Respond %v Marshalling JSON response\n", v.TraceID, err)
+		jsonData = []byte("{}")
+	}
+
+	// Send the result back to the client.
+	io.WriteString(w, string(jsonData))
+}
+
 func WebsocketErrorHandler(ctx context.Context, err error) {
 	// TODO: replace status codes
 
@@ -187,40 +206,6 @@ func WebsocketErrorHandler(ctx context.Context, err error) {
 	}
 
 	WebsocketRespondError(ctx, err, serverErrorStatusCode)
-}
-
-// RespondError sends JSON describing the error
-func RespondError(ctx context.Context, w http.ResponseWriter, err error, code int) {
-	Respond(ctx, w, JSONError{Error: err.Error()}, code)
-}
-
-// Respond sends JSON to the client.
-// If code is StatusNoContent, v is expected to be nil.
-func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code int) {
-	// Set the status code for the request logger middleware.
-	v := ctx.Value(KeyValues).(*Values)
-	v.StatusCode = code
-
-	// Just set the status code and we are done.
-	if code == http.StatusNoContent {
-		w.WriteHeader(code)
-		return
-	}
-
-	// Set the content type.
-	w.Header().Set("Content-Type", "application/json")
-
-	// Write the status code to the response and context.
-	w.WriteHeader(code)
-	// Marshal the data into a JSON string.
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		logStdErr.Printf("%s : Respond %v Marshalling JSON response\n", v.TraceID, err)
-		jsonData = []byte("{}")
-	}
-
-	// Send the result back to the client.
-	io.WriteString(w, string(jsonData))
 }
 
 func isWebsocket(ctx context.Context) bool {
