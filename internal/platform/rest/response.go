@@ -23,8 +23,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var ErrNoWebsocketConnection = errors.New("no websocket connection found")
-
 // Invalid describes a validation error belonging to a specific field.
 type Invalid struct {
 	Fld string      `json:"field_name"`
@@ -71,6 +69,7 @@ type JSONError struct {
 }
 
 var (
+
 	// ErrUnauthorized occurs when the call is not authorized.
 	ErrUnauthorized = errors.New("Not authorized")
 
@@ -89,6 +88,8 @@ var (
 	// ErrForbidden occurs when we know who the user is but they attempt a
 	// forbidden action.
 	ErrForbidden = errors.New("Forbidden")
+
+	ErrCtxNoWebsocketConnection = errors.New("no websocket connection found in context")
 )
 
 // ErrorHandler handles all error responses for the API.
@@ -172,23 +173,23 @@ func WebsocketErrorHandler(ctx context.Context, err error) {
 
 	switch errors.Cause(err) {
 	case ErrNotFound:
-		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, serverErrorStatusCode)
 		return
 
 	case ErrInvalidID:
-		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, serverErrorStatusCode)
 		return
 
 	case ErrValidation:
-		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, serverErrorStatusCode)
 		return
 
 	case ErrUnauthorized:
-		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, serverErrorStatusCode)
 		return
 
 	case ErrForbidden:
-		WebsocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, serverErrorStatusCode)
 		return
 	}
 
@@ -198,14 +199,14 @@ func WebsocketErrorHandler(ctx context.Context, err error) {
 			Error:  ErrValidation.Error(),
 			Fields: e,
 		}
-		WebsocketRespond(ctx, v)
+		websocketRespond(ctx, v)
 		return
 	case ResponseError:
-		WebsocketRespondError(ctx, e.Err, serverErrorStatusCode)
+		websocketRespondError(ctx, e.Err, serverErrorStatusCode)
 		return
 	}
 
-	WebsocketRespondError(ctx, err, serverErrorStatusCode)
+	websocketRespondError(ctx, err, serverErrorStatusCode)
 }
 
 func isWebsocket(ctx context.Context) bool {
@@ -213,10 +214,16 @@ func isWebsocket(ctx context.Context) bool {
 	return ok
 }
 
+func websocketRespond(ctx context.Context, data interface{}) {
+	if err := WebsocketRespond(ctx, data); err != nil {
+		logStdErr.Println(err)
+	}
+}
+
 func WebsocketRespond(ctx context.Context, data interface{}) error {
 	wsConn, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
 	if !ok {
-		return ErrNoWebsocketConnection
+		return ErrCtxNoWebsocketConnection
 	}
 
 	jsonData, err := json.MarshalIndent(data, "", "  ")
@@ -232,27 +239,32 @@ func WebsocketRespond(ctx context.Context, data interface{}) error {
 	return nil
 }
 
-func WebsocketRespondError(ctx context.Context, data interface{}, code int) {
+func websocketRespondError(ctx context.Context, data interface{}, code int) {
+	if err := WebsocketRespondError(ctx, data, code); err != nil {
+		logStdErr.Println(err)
+	}
+}
+
+func WebsocketRespondError(ctx context.Context, data interface{}, code int) error {
 	wsConn, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
 	if !ok {
-		logStdErr.Println(ErrNoWebsocketConnection)
-		return
+		return ErrCtxNoWebsocketConnection
 	}
 
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		logStdErr.Println(err)
-		return
+		return errors.Wrap(err, "")
 	}
 
 	message := websocket.FormatCloseMessage(code, string(jsonData))
 
 	err = wsConn.WriteMessage(websocket.CloseMessage, message)
 	if err != nil {
-		logStdErr.Println(err)
-		return
+		return errors.Wrap(err, "")
 	}
 
 	wsConn.Close()
+
+	return nil
 
 }
