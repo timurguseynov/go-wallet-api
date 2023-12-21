@@ -209,6 +209,15 @@ func WebsocketErrorHandler(ctx context.Context, err error) {
 	websocketRespondError(ctx, err, serverErrorStatusCode)
 }
 
+func errorHandler(ctx context.Context, w http.ResponseWriter, err error) {
+	if isWebsocket(ctx) {
+		WebsocketErrorHandler(ctx, err)
+		return
+	}
+
+	ErrorHandler(ctx, w, err)
+}
+
 func isWebsocket(ctx context.Context) bool {
 	_, ok := ctx.Value(WebsocketConnection).(*websocket.Conn)
 	return ok

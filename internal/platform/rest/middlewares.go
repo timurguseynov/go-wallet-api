@@ -36,7 +36,7 @@ func ErrorHandlerMiddleware(next Handler) Handler {
 				logStdErr.Printf("%s : ERROR : Panic Caught : %s\n", v.TraceID, r)
 
 				// Respond with the error.
-				RespondError(ctx, w, errors.New("unhandled"), http.StatusInternalServerError)
+				errorHandler(ctx, w, errors.New("unhandled"))
 
 				// Print out the stack.
 				logStdErr.Printf("%s : ERROR : Stacktrace\n%s\n", v.TraceID, debug.Stack())
@@ -52,12 +52,7 @@ func ErrorHandlerMiddleware(next Handler) Handler {
 			}
 
 			// Respond with the error.
-			if isWebsocket(ctx) {
-				WebsocketErrorHandler(ctx, err)
-				return nil
-			}
-
-			ErrorHandler(ctx, w, err)
+			errorHandler(ctx, w, err)
 
 			// The error has been handled so we can stop propigating it.
 			return nil
