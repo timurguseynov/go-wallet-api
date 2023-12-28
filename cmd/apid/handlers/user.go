@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/rest"
+	"github.com/timurguseynov/go-wallet-api/internal/user"
 
 	"github.com/pkg/errors"
 
-	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/db"
 )
 
 // User represents the User API method handler set.

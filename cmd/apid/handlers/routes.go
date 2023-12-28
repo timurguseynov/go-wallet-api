@@ -6,8 +6,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
+	"github.com/timurguseynov/go-wallet-api/internal/db"
+	"github.com/timurguseynov/go-wallet-api/internal/rest"
 )
 
 // API returns a handler for a set of routes.

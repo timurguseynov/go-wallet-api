@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
+	"github.com/timurguseynov/go-wallet-api/internal/db"
 )
 
 var (

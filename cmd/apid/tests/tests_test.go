@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/tests"
+	"github.com/timurguseynov/go-wallet-api/internal/rest"
+	"github.com/timurguseynov/go-wallet-api/internal/tests"
 )
 
 var (

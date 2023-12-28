@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/rest"
+	"github.com/timurguseynov/go-wallet-api/internal/user"
 )
 
 var (

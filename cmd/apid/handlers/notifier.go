@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/db"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/rest"
-	"github.com/timurguseynov/go-wallet-api/internal/platform/user"
+	"github.com/timurguseynov/go-wallet-api/internal/db"
+	"github.com/timurguseynov/go-wallet-api/internal/rest"
+	"github.com/timurguseynov/go-wallet-api/internal/user"
 )
 
 type Notifier struct {
