@@ -29,7 +29,6 @@ var schema = &memdb.DBSchema{
 }
 
 func NewDB() (*DB, error) {
-	// Create a new data base
 	db, err := memdb.NewMemDB(schema)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
