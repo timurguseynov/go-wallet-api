@@ -14,14 +14,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/timurguseynov/go-wallet-api/config"
 	"github.com/timurguseynov/go-wallet-api/internal/db"
 
 	"github.com/timurguseynov/go-wallet-api/cmd/apid/handlers"
-)
-
-const (
-	host = "localhost"
-	port = "3000"
 )
 
 // init is called before main. We are using init to customize logging output.
@@ -34,6 +30,12 @@ func init() {
 func main() {
 	log.Println("main : Started")
 
+	// Read the config from .env file or environment variables
+	conf, err := config.Read()
+	if err != nil {
+		log.Fatal("main : couldn't read config", err)
+	}
+
 	// Register the Master Session for the database.
 	log.Println("main : Started : Capturing Master DB:")
 	dbConn, err := db.NewDB()
@@ -44,7 +46,7 @@ func main() {
 	}
 
 	server := http.Server{
-		Addr:    host + ":" + port,
+		Addr:    conf.REST.Host + ":" + conf.REST.Port,
 		Handler: handlers.API(dbConn),
 	}
 
@@ -54,7 +56,7 @@ func main() {
 
 	// Start the listener.
 	go func() {
-		log.Printf("startup : Listening %s", host)
+		log.Printf("startup : Listening %s:%s", conf.REST.Host, conf.REST.Port)
 		log.Printf("shutdown : Listener closed : %v", server.ListenAndServe())
 		wg.Done()
 	}()
