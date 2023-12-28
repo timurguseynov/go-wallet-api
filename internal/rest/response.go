@@ -167,29 +167,25 @@ func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code 
 }
 
 func WebsocketErrorHandler(ctx context.Context, err error) {
-	// TODO: replace status codes
-
-	serverErrorStatusCode := 1011
-
 	switch errors.Cause(err) {
 	case ErrNotFound:
-		websocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 		return
 
 	case ErrInvalidID:
-		websocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 		return
 
 	case ErrValidation:
-		websocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 		return
 
 	case ErrUnauthorized:
-		websocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 		return
 
 	case ErrForbidden:
-		websocketRespondError(ctx, err, serverErrorStatusCode)
+		websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 		return
 	}
 
@@ -202,11 +198,11 @@ func WebsocketErrorHandler(ctx context.Context, err error) {
 		websocketRespond(ctx, v)
 		return
 	case ResponseError:
-		websocketRespondError(ctx, e.Err, serverErrorStatusCode)
+		websocketRespondError(ctx, e.Err, websocket.CloseInternalServerErr)
 		return
 	}
 
-	websocketRespondError(ctx, err, serverErrorStatusCode)
+	websocketRespondError(ctx, err, websocket.CloseInternalServerErr)
 }
 
 func errorHandler(ctx context.Context, w http.ResponseWriter, err error) {
